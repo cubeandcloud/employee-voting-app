@@ -43,7 +43,10 @@ QUESTIONS = [
     {"id": 7, "category": "Growth & Contribution", "en": "Who made the biggest difference this year through their growth, ideas, or contribution to the process?", "tr": "Bu yıl gelişimi, fikirleri veya süreçlere sağladığı katkılarla en çok fark yaratan kişi kimdi?"},
     {"id": 8, "category": "Team Spirit", "en": "Who contributed the most to the team spirit this year?", "tr": "Bu yıl ekip ruhuna en çok katkı sağlayan kişi kimdi?"},
     {"id": 9, "category": "Reliability", "en": "Who was the most reliable person when things needed to get done?", "tr": "İşlerin tamamlanması gerektiğinde en güvenilir kişi kimdi?"},
-    {"id": 10, "category": "Overall Impact", "en": "Who made the strongest overall impact on the team this year?", "tr": "Bu yıl ekip üzerinde genel olarak en güçlü etkiyi kim yarattı?"}
+    {"id": 10, "category": "Communication Tools", "en": "Who used communication tools most effectively and proactively across channels such as email, Teams, and WhatsApp?", "tr": "E-mail, Teams ve WhatsApp gibi iletişim kanallarını en etkili, proaktif ve doğru şekilde kullanan kişi kimdi?"},
+    {"id": 11, "category": "Overall Impact", "en": "Who made the strongest overall impact on the team this year?", "tr": "Bu yıl ekip üzerinde genel olarak en güçlü etkiyi kim yarattı?"}
+    
+
 ]
 
 # =====================================================
