@@ -567,7 +567,7 @@ if menu == "Vote":
     else:
         st.info("Kendi adına oy veremezsin. Your own name will not appear in the options.")
 
-                available_options = [person for person in EMPLOYEES if person != voter]
+        available_options = [person for person in EMPLOYEES if person != voter]
         answers = {}
         comments = {}
 
