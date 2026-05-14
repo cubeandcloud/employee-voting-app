@@ -315,7 +315,6 @@ st.markdown(
 def get_connection():
     return sqlite3.connect(DB_NAME, check_same_thread=False)
 
-
 def create_tables():
     conn = get_connection()
     cursor = conn.cursor()
@@ -329,11 +328,18 @@ def create_tables():
             question_id INTEGER NOT NULL,
             question_category TEXT NOT NULL,
             selected_person TEXT NOT NULL,
+            comment TEXT NOT NULL DEFAULT '',
             score INTEGER NOT NULL,
             created_at TEXT NOT NULL
         )
         '''
     )
+
+    cursor.execute("PRAGMA table_info(votes)")
+    columns = [column[1] for column in cursor.fetchall()]
+
+    if "comment" not in columns:
+        cursor.execute("ALTER TABLE votes ADD COLUMN comment TEXT NOT NULL DEFAULT ''")
 
     conn.commit()
     conn.close()
@@ -347,7 +353,7 @@ def has_voted(voter):
     return count > 0
 
 
-def save_votes(voter, nickname, answers):
+def save_votes(voter, nickname, answers, comments):
     conn = get_connection()
     cursor = conn.cursor()
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -355,6 +361,7 @@ def save_votes(voter, nickname, answers):
     for question in QUESTIONS:
         question_id = question["id"]
         selected_person = answers[question_id]
+        comment = comments[question_id]
 
         cursor.execute(
             '''
@@ -364,10 +371,11 @@ def save_votes(voter, nickname, answers):
                 question_id,
                 question_category,
                 selected_person,
+                comment,
                 score,
                 created_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''',
             (
                 voter,
@@ -375,6 +383,7 @@ def save_votes(voter, nickname, answers):
                 question_id,
                 question["category"],
                 selected_person,
+                comment,
                 SCORE_PER_VOTE,
                 created_at
             )
@@ -561,6 +570,7 @@ if menu == "Vote":
 
         available_options = [person for person in EMPLOYEES if person != voter]
         answers = {}
+        comments = {}
 
         with st.form("voting_form"):
             for question in QUESTIONS:
@@ -575,13 +585,21 @@ if menu == "Vote":
                     unsafe_allow_html=True
                 )
 
-                selected_person = st.selectbox(
+                 selected_person = st.selectbox(
                     "Choose one person / Bir kişi seç",
                     options=["Select / Seç"] + available_options,
                     key=f"question_{question['id']}"
                 )
 
+                comment = st.text_area(
+                    "Why did you choose this person? / Bu kişiyi neden seçtin?",
+                    placeholder="Kısa bir açıklama yaz...",
+                    key=f"comment_{question['id']}"
+                )
+
                 answers[question["id"]] = selected_person
+                comments[question["id"]] = comment.strip()
+
                 st.divider()
 
             submitted = st.form_submit_button("Submit My Vote / Oyumu Gönder")
@@ -591,10 +609,12 @@ if menu == "Vote":
                     st.error("Lütfen nickname yaz.")
                 elif any(value == "Select / Seç" for value in answers.values()):
                     st.error("Lütfen tüm sorular için bir kişi seç.")
+                elif any(comment == "" for comment in comments.values()):
+                    st.error("Lütfen her soru için kısa bir açıklama yaz.")
                 elif has_voted(voter):
                     st.error("Bu isim daha önce oy kullandı.")
                 else:
-                    save_votes(voter, nickname.strip(), answers)
+                    save_votes(voter, nickname.strip(), answers, comments)
                     st.success("Oyun başarıyla kaydedildi. Thank you for voting!")
                     st.balloons()
 
