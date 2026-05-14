@@ -22,7 +22,7 @@ SD_RICH_BLACK = "#000000"
 
 st.markdown(f"""
 <style>
-    .stApp {
+    .stApp {{
     background:
         radial-gradient(circle at top left, rgba(167,122,25,0.16), transparent 28%),
         radial-gradient(circle at bottom right, rgba(6,13,41,0.10), transparent 34%),
