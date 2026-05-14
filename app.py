@@ -351,11 +351,16 @@ create_tables()
 st.markdown(
     """
     <div class="app-hero">
-        <div class="hero-title">🏆 Our Employee of the Year</div>
+        <div class="hero-title">🏆 SUPERDRY TURKEY OFFICE</div>
         <div class="gold-line"></div>
         <div class="hero-subtitle">
-            A special moment to celebrate the person who made a meaningful difference this year.<br><br>
-            Bu yıl fark yaratan, katkısıyla öne çıkan çalışma arkadaşımızı gururla kutluyoruz.
+            <b>Employee of the Year Voting</b><br><br>
+            This year, every team member contributed in their own way with effort, support, responsibility, and team spirit. 
+            Each contribution helped make our office stronger, more positive, and more connected.<br><br>
+            Now, as a small and meaningful celebration of our shared year, we are choosing the colleague who stood out just a little more with their impact, dedication, and positive energy.<br><br>
+            Bu yıl her ekip arkadaşımız emeği, desteği, sorumluluk bilinci ve ekip ruhuyla kendi yolunda değer kattı. 
+            Her katkı ofisimizi daha güçlü, daha pozitif ve daha bağlı hale getirdi.<br><br>
+            Şimdi, birlikte geçirdiğimiz bu yılı küçük ama anlamlı bir şekilde kutlamak için; etkisi, özverisi ve pozitif enerjisiyle biraz daha öne çıkan çalışma arkadaşımızı birlikte seçiyoruz.
         </div>
     </div>
     """,
@@ -370,6 +375,39 @@ menu = st.sidebar.radio(
 if menu == "Vote":
     st.header("🗳️ Vote / Oy Kullan")
 
+if menu == "Vote":
+    st.header("🗳️ Vote / Oy Kullan")
+
+    st.markdown(
+        """
+        <div style="display: flex; gap: 14px; margin: 18px 0 26px 0; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.18); border: 1px solid rgba(167,122,25,0.45); border-radius: 18px; padding: 18px; text-align: center;">
+                <div style="font-size: 26px;">🔒</div>
+                <b>Private Voting</b><br>
+                <span>Oylar gizli tutulur.</span>
+            </div>
+
+            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.18); border: 1px solid rgba(167,122,25,0.45); border-radius: 18px; padding: 18px; text-align: center;">
+                <div style="font-size: 26px;">🚫</div>
+                <b>No Self-Voting</b><br>
+                <span>Kendi adına oy veremezsin.</span>
+            </div>
+
+            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.18); border: 1px solid rgba(167,122,25,0.45); border-radius: 18px; padding: 18px; text-align: center;">
+                <div style="font-size: 26px;">🏆</div>
+                <b>One Winner</b><br>
+                <span>Sonuçta yalnızca yılın elemanı açıklanır.</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    voter = st.selectbox(
+        "1. Select your real name / Gerçek ismini seç",
+        options=["Select / Seç"] + EMPLOYEES
+    )
+    
     voter = st.selectbox(
         "1. Select your real name / Gerçek ismini seç",
         options=["Select / Seç"] + EMPLOYEES
