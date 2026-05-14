@@ -22,13 +22,13 @@ SD_RICH_BLACK = "#000000"
 
 st.markdown(f"""
 <style>
-    .stApp {
+    .stApp {{
     background:
         radial-gradient(circle at top left, rgba(167,122,25,0.25), transparent 28%),
         radial-gradient(circle at bottom right, rgba(255,238,217,0.18), transparent 34%),
         linear-gradient(135deg, {SD_NAVY} 0%, {SD_DARK_TEAL} 48%, {SD_RICH_BLACK} 100%);
     color: {SD_OFF_WHITE};
-}
+}}
 
     [data-testid="stSidebar"] {{
         background: {SD_RICH_BLACK};
