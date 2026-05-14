@@ -10,7 +10,6 @@ from datetime import datetime
 st.set_page_config(
     page_title="Superdry Turkey Office | Employee of the Year",
     page_icon="🏆",
-    layout="centered"
 )
 
 # =====================================================
@@ -568,7 +567,7 @@ if menu == "Vote":
     else:
         st.info("Kendi adına oy veremezsin. Your own name will not appear in the options.")
 
-        available_options = [person for person in EMPLOYEES if person != voter]
+                available_options = [person for person in EMPLOYEES if person != voter]
         answers = {}
         comments = {}
 
@@ -585,7 +584,7 @@ if menu == "Vote":
                     unsafe_allow_html=True
                 )
 
-                 selected_person = st.selectbox(
+                selected_person = st.selectbox(
                     "Choose one person / Bir kişi seç",
                     options=["Select / Seç"] + available_options,
                     key=f"question_{question['id']}"
@@ -603,6 +602,7 @@ if menu == "Vote":
                 st.divider()
 
             submitted = st.form_submit_button("Submit My Vote / Oyumu Gönder")
+                
 
             if submitted:
                 if not nickname.strip():
