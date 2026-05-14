@@ -24,9 +24,9 @@ st.markdown(f"""
 <style>
     .stApp {{
     background:
-        radial-gradient(circle at top left, rgba(167,122,25,0.25), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(255,238,217,0.18), transparent 34%),
-        linear-gradient(135deg, {SD_NAVY} 0%, {SD_DARK_TEAL} 48%, {SD_RICH_BLACK} 100%);
+        radial-gradient(circle at top left, rgba(167,122,25,0.14), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(6,13,41,0.10), transparent 35%),
+        linear-gradient(135deg, #16324F 0%, #1E4665 52%, #F7E3C6 100%);
     color: {SD_OFF_WHITE};
 }}
 
@@ -156,6 +156,31 @@ st.markdown(f"""
     .stAlert {{
         border-radius: 16px;
     }}
+
+.info-card-title {{
+    color: {SD_RICH_BLACK} !important;
+    font-weight: 850;
+    font-size: 17px;
+}}
+
+.info-card-text {{
+    color: {SD_NAVY} !important;
+    font-size: 14px;
+}}
+
+.vote-panel {{
+    background: rgba(255,238,217,0.96);
+    border: 1px solid rgba(167,122,25,0.50);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 14px 38px rgba(0,0,0,0.22);
+    margin-top: 18px;
+    margin-bottom: 24px;
+}}
+
+.vote-panel * {{
+    color: {SD_NAVY} !important;
+}}
 
     hr {{
         border-color: rgba(167,122,25,0.35);
@@ -375,39 +400,33 @@ menu = st.sidebar.radio(
 if menu == "Vote":
     st.header("🗳️ Vote / Oy Kullan")
 
-if menu == "Vote":
-    st.header("🗳️ Vote / Oy Kullan")
-
     st.markdown(
         """
         <div style="display: flex; gap: 14px; margin: 18px 0 26px 0; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.18); border: 1px solid rgba(167,122,25,0.45); border-radius: 18px; padding: 18px; text-align: center;">
+            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.92); border: 1px solid rgba(167,122,25,0.55); border-radius: 18px; padding: 18px; text-align: center;">
                 <div style="font-size: 26px;">🔒</div>
-                <b>Private Voting</b><br>
-                <span>Oylar gizli tutulur.</span>
+                <div class="info-card-title">Private Voting</div>
+                <div class="info-card-text">Oylar gizli tutulur.</div>
             </div>
 
-            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.18); border: 1px solid rgba(167,122,25,0.45); border-radius: 18px; padding: 18px; text-align: center;">
+            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.92); border: 1px solid rgba(167,122,25,0.55); border-radius: 18px; padding: 18px; text-align: center;">
                 <div style="font-size: 26px;">🚫</div>
-                <b>No Self-Voting</b><br>
-                <span>Kendi adına oy veremezsin.</span>
+                <div class="info-card-title">No Self-Voting</div>
+                <div class="info-card-text">Kendi adına oy veremezsin.</div>
             </div>
 
-            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.18); border: 1px solid rgba(167,122,25,0.45); border-radius: 18px; padding: 18px; text-align: center;">
+            <div style="flex: 1; min-width: 180px; background: rgba(255,238,217,0.92); border: 1px solid rgba(167,122,25,0.55); border-radius: 18px; padding: 18px; text-align: center;">
                 <div style="font-size: 26px;">🏆</div>
-                <b>One Winner</b><br>
-                <span>Sonuçta yalnızca yılın elemanı açıklanır.</span>
+                <div class="info-card-title">One Winner</div>
+                <div class="info-card-text">Sonuçta yılın elemanı açıklanır.</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    voter = st.selectbox(
-        "1. Select your real name / Gerçek ismini seç",
-        options=["Select / Seç"] + EMPLOYEES
-    )
-    
+    st.markdown('<div class="vote-panel">', unsafe_allow_html=True)
+
     voter = st.selectbox(
         "1. Select your real name / Gerçek ismini seç",
         options=["Select / Seç"] + EMPLOYEES
@@ -417,6 +436,8 @@ if menu == "Vote":
         "2. Write your nickname / Nickname yaz",
         placeholder="Example: BlueTiger"
     )
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if voter != "Select / Seç":
         if has_voted(voter):
@@ -459,6 +480,7 @@ if menu == "Vote":
                         st.balloons()
     else:
         st.warning("Oy kullanmak için önce gerçek ismini seçmelisin.")
+
 
 elif menu == "Final Result":
     st.header("🏆 Final Result / Final Sonuç")
