@@ -48,72 +48,84 @@ QUESTIONS = [
     },
     {
         "id": 3,
+        "category": "Planning & Follow-up",
+        "en": "Who shows the strongest discipline in planning, time tracking, attending meetings on time, and following up on tasks in an organized way?",
+        "tr": "Planlama, zaman takibi, toplantılara zamanında katılma ve işleri düzenli şekilde takip etme konusunda en güçlü disiplini gösteren kişi kimdir?"
+    },
+    {
+        "id": 4,
         "category": "Supporting Cross Functions",
         "en": "Who has been the most supportive teammate across cross-functional teams?",
         "tr": "Kendi ekibi dışındaki ekiplerle çalışırken, farklı fonksiyonlara en çok destek olan kişi kimdi?"
     },
     {
-        "id": 4,
+        "id": 5,
         "category": "Problem Solving",
         "en": "Who was the most effective in finding solutions during challenging situations?",
         "tr": "Zor veya beklenmedik durumlarda çözüm üretme ve problemi yönetme konusunda en etkili kişi kimdi?"
     },
     {
-        "id": 5,
+        "id": 6,
         "category": "Communication & Positive Attitude",
         "en": "Who contributed the most with their communication skills and positive attitude?",
         "tr": "Ekip içindeki iletişimi, yapıcı yaklaşımı ve pozitif tutumuyla en çok katkı sağlayan kişi kimdi?"
     },
     {
-        "id": 6,
+        "id": 7,
+        "category": "Feedback & Transparency",
+        "en": "Who gives feedback in the most transparent, honest, and constructive way, helping others improve while keeping communication clear and respectful?",
+        "tr": "Geri bildirimi en şeffaf, dürüst ve yapıcı şekilde vererek, iletişimi açık ve saygılı tutan ve başkalarının gelişimine katkı sağlayan kişi kimdir?"
+    },
+    {
+        "id": 8,
         "category": "Work Quality",
         "en": "Who stood out the most by completing their work accurately, consistently, and on time?",
         "tr": "İşlerini doğru, düzenli, tutarlı ve zamanında tamamlama konusunda en çok kim öne çıktı?"
     },
     {
-        "id": 7,
+        "id": 9,
         "category": "Team Cheer-Up",
         "en": "Who has been the teammate who always manages to cheer others up?",
         "tr": "Moral gerektiğinde ortamı neşelendiren, ekibi güldüren veya pozitif enerji katan kişi kimdi?"
     },
     {
-        "id": 8,
+        "id": 10,
         "category": "Team Spirit",
         "en": "Who contributed the most to the team spirit this year?",
         "tr": "Bu yıl ekip ruhuna en çok katkı sağlayan kişi kimdi?"
     },
     {
-        "id": 9,
+        "id": 11,
         "category": "Reliability",
         "en": "Who was the most reliable person when things needed to get done?",
         "tr": "İşlerin tamamlanması gerektiğinde en güvenilir kişi kimdi?"
     },
     {
-        "id": 10,
+        "id": 12,
         "category": "Best Use of Communication Tools",
         "en": "Who communicates most proactively and effectively across e-mail, Teams and WhatsApp?",
         "tr": "E-mail, Teams ve WhatsApp gibi iletişim kanallarında en proaktif, etkili ve doğru iletişim kuran kişi kimdi?"
     },
     {
-        "id": 11,
+        "id": 13,
         "category": "Most Agile Teammate",
-        "en": "Who adapts most quickly and effectively to changing priorities?",
+        "en": "Who is the one who adapts the quickest when priorities change or new situations come up?",
         "tr": "Değişen önceliklere, hızlı aksiyon alınması gereken durumlara ve yeni koşullara en hızlı ve etkili şekilde uyum sağlayan kişi kimdi?"
     },
     {
-        "id": 12,
+        "id": 14,
         "category": "Social Spirit",
         "en": "Who has been the most enthusiastic and supportive teammate when it comes to social activities and team plans?",
         "tr": "Sosyal aktiviteler, ekip planları ve birlikte yapılan organizasyonlarda en istekli ve destekleyici kişi kimdi?"
     },
     {
-        "id": 13,
+        "id": 15,
         "category": "Important Project Partner",
         "en": "Who would you choose to work with on a highly important project?",
         "tr": "Çok önemli bir projede birlikte çalışmak için bir kişiyi seçmen gerekse, kimi seçerdin?"
     },
     {
-        "id": 14,
+        "id": 16,
         "category": "Work Ethic & Dedication",
         "en": "Who has earned your respect with their dedication and strong work ethic?",
         "tr": "Çalışma disiplini, iş etiği ve özverisiyle saygını en çok kazanan kişi kimdi?"
