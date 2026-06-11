@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import random
 from datetime import datetime
 
 # =====================================================
@@ -118,8 +119,6 @@ QUESTIONS = [
         "tr": "Çalışma disiplini, iş etiği ve özverisiyle saygını en çok kazanan kişi kimdi?"
     }
 ]
-
-
 
 # =====================================================
 # DESIGN / STYLE
@@ -305,6 +304,20 @@ st.markdown(
         color: var(--sd-navy) !important;
     }
 
+    .top-three-box {
+        background: rgba(255,238,217,0.96);
+        border: 1px solid rgba(167,122,25,0.65);
+        border-radius: 26px;
+        padding: 28px;
+        text-align: center;
+        box-shadow: 0 16px 42px rgba(0,0,0,0.25);
+        margin: 22px 0;
+    }
+
+    .top-three-box * {
+        color: #060D29 !important;
+    }
+
     .winner-box {
         background:
             radial-gradient(circle at top, rgba(255,238,217,0.96), rgba(167,122,25,0.92)),
@@ -341,6 +354,24 @@ st.markdown(
 
     .stTextInput input,
     .stSelectbox div[data-baseweb="select"] {
+        background-color: #FFF7EC !important;
+        color: var(--sd-black) !important;
+        border-radius: 12px !important;
+    }
+
+    .stRadio label {
+        color: var(--sd-navy) !important;
+        font-weight: 800 !important;
+    }
+
+    .stRadio div[role="radiogroup"] {
+        background: rgba(255,247,236,0.72);
+        border: 1px solid rgba(167,122,25,0.35);
+        border-radius: 16px;
+        padding: 12px;
+    }
+
+    .stTextArea textarea {
         background-color: #FFF7EC !important;
         color: var(--sd-black) !important;
         border-radius: 12px !important;
@@ -386,6 +417,7 @@ st.markdown(
 
 def get_connection():
     return sqlite3.connect(DB_NAME, check_same_thread=False)
+
 
 def create_tables():
     conn = get_connection()
@@ -528,6 +560,25 @@ def calculate_category_winners(votes_df):
 
 
 # =====================================================
+# HELPER FUNCTIONS
+# =====================================================
+
+def get_randomized_options(voter):
+    """
+    Her voter için seçenekleri session içinde bir kere random yapar.
+    Böylece Streamlit rerun olduğunda sıralama sürekli değişip kullanıcıyı bozmaz.
+    """
+    session_key = f"random_options_{voter}"
+
+    if session_key not in st.session_state:
+        available_options = [person for person in EMPLOYEES if person != voter]
+        random.shuffle(available_options)
+        st.session_state[session_key] = available_options
+
+    return st.session_state[session_key]
+
+
+# =====================================================
 # APP START
 # =====================================================
 
@@ -569,8 +620,8 @@ def show_result_hero():
             <div class="hero-title">🏆 Our Employee of the Year</div>
             <div class="gold-line"></div>
             <div class="hero-subtitle">
-                A special moment to celebrate the person who made a meaningful difference this year.<br><br>
-                Bu yıl fark yaratan, katkısıyla öne çıkan çalışma arkadaşımızı gururla kutluyoruz.
+                A special moment to celebrate the people who made a meaningful difference this year.<br><br>
+                Bu yıl fark yaratan, katkısıyla öne çıkan çalışma arkadaşlarımızı gururla kutluyoruz.
             </div>
         </div>
         ''',
@@ -602,8 +653,8 @@ if menu == "Vote":
             </div>
             <div class="rule-card">
                 <div class="rule-icon">🏆</div>
-                <div class="rule-title">One Winner</div>
-                <div class="rule-text">Sonuçta yılın elemanı açıklanır.</div>
+                <div class="rule-title">Winner</div>
+                <div class="rule-text">Finalde ilk 3 kişi açıklanır.</div>
             </div>
         </div>
         ''',
@@ -640,7 +691,8 @@ if menu == "Vote":
     else:
         st.info("Kendi adına oy veremezsin. Your own name will not appear in the options.")
 
-        available_options = [person for person in EMPLOYEES if person != voter]
+        randomized_options = get_randomized_options(voter)
+
         answers = {}
         comments = {}
 
@@ -657,10 +709,12 @@ if menu == "Vote":
                     unsafe_allow_html=True
                 )
 
-                selected_person = st.selectbox(
+                selected_person = st.radio(
                     "Choose one person / Bir kişi seç",
-                    options=["Select / Seç"] + available_options,
-                    key=f"question_{question['id']}"
+                    options=randomized_options,
+                    key=f"question_{question['id']}",
+                    horizontal=True,
+                    index=None
                 )
 
                 comment = st.text_area(
@@ -675,12 +729,11 @@ if menu == "Vote":
                 st.divider()
 
             submitted = st.form_submit_button("Submit My Vote / Oyumu Gönder")
-                
 
             if submitted:
                 if not nickname.strip():
                     st.error("Lütfen nickname yaz.")
-                elif any(value == "Select / Seç" for value in answers.values()):
+                elif any(value is None for value in answers.values()):
                     st.error("Lütfen tüm sorular için bir kişi seç.")
                 elif any(comment == "" for comment in comments.values()):
                     st.error("Lütfen her soru için kısa bir açıklama yaz.")
@@ -721,7 +774,7 @@ elif menu == "Final Result":
             key="result_password_input"
         )
 
-        if st.button("Reveal the Winner / Kazananı Açıkla"):
+        if st.button("Reveal Top 3 / İlk 3'ü Açıkla"):
             if result_password_input == RESULT_PASSWORD:
                 st.session_state.result_unlocked = True
                 st.balloons()
@@ -732,20 +785,84 @@ elif menu == "Final Result":
 
     else:
         votes_df = load_votes()
-        winner, winner_score = calculate_winner(votes_df)
+        total_scores = calculate_total_scores(votes_df)
 
-        if winner is None:
+        if total_scores.empty:
             st.info("Henüz oy yok. No votes yet.")
         else:
+            top_3 = total_scores.head(3).reset_index(drop=True)
+
             st.balloons()
             st.snow()
+
+            st.markdown(
+                '''
+                <div class="soft-card" style="text-align:center;">
+                    <h2>✨ The Moment Has Come ✨</h2>
+                    <p>
+                        Every vote represents appreciation, respect and team spirit.<br>
+                        Now it is time to reveal our Top 3!
+                    </p>
+                    <p>
+                        Her oy; takdir, saygı ve ekip ruhunu temsil ediyor.<br>
+                        Şimdi Top 3'ü açıklama zamanı!
+                    </p>
+                </div>
+                ''',
+                unsafe_allow_html=True
+            )
+
+            if len(top_3) >= 3:
+                third_name = top_3.loc[2, "selected_person"]
+                third_score = int(top_3.loc[2, "score"])
+
+                st.markdown(
+                    f'''
+                    <div class="top-three-box">
+                        <div style="font-size:28px; font-weight:950;">🥉 3rd Place / 3. Sıra</div>
+                        <div style="font-size:46px; font-weight:950; margin:14px 0;">{third_name}</div>
+                        <div style="font-size:24px; font-weight:850;">Total Score / Toplam Puan: {third_score}</div>
+                    </div>
+                    ''',
+                    unsafe_allow_html=True
+                )
+
+            if len(top_3) >= 2:
+                second_name = top_3.loc[1, "selected_person"]
+                second_score = int(top_3.loc[1, "score"])
+
+                st.markdown(
+                    f'''
+                    <div class="top-three-box">
+                        <div style="font-size:30px; font-weight:950;">🥈 2nd Place / 2. Sıra</div>
+                        <div style="font-size:50px; font-weight:950; margin:14px 0;">{second_name}</div>
+                        <div style="font-size:25px; font-weight:850;">Total Score / Toplam Puan: {second_score}</div>
+                    </div>
+                    ''',
+                    unsafe_allow_html=True
+                )
+
+            first_name = top_3.loc[0, "selected_person"]
+            first_score = int(top_3.loc[0, "score"])
 
             st.markdown(
                 f'''
                 <div class="winner-box">
                     <div class="winner-label">🏆 Employee of the Year / Yılın Elemanı 🏆</div>
-                    <div class="winner-name">{winner}</div>
-                    <div class="winner-score">Total Score / Toplam Puan: {winner_score}</div>
+                    <div class="winner-name">{first_name}</div>
+                    <div class="winner-score">Total Score / Toplam Puan: {first_score}</div>
+                </div>
+                ''',
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
+                '''
+                <div class="soft-card" style="text-align:center; margin-top:24px;">
+                    <b>Congratulations to our Top 3!</b><br>
+                    This result is a celebration of contribution, support and team spirit.<br><br>
+                    <b>Top 3'ümüzü tebrik ederiz!</b><br>
+                    Bu sonuç; katkının, desteğin ve ekip ruhunun bir kutlamasıdır.
                 </div>
                 ''',
                 unsafe_allow_html=True
