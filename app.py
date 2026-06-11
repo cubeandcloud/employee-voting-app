@@ -17,8 +17,9 @@ st.set_page_config(
 # =====================================================
 
 DB_NAME = "votes.db"
-ADMIN_PASSWORD = "admin123"       # Change this before sharing
-RESULT_PASSWORD = "winner2026"    # Password for revealing final result
+ADMIN_PASSWORD = "admin123"        # Limited admin: no voter / nickname info
+FULL_ADMIN_PASSWORD = "tokyo123"   # Full admin: shows everything
+RESULT_PASSWORD = "winner2026"     # Password for revealing final result
 SCORE_PER_VOTE = 10
 
 EMPLOYEES = [
@@ -863,6 +864,9 @@ elif menu == "Final Result":
 # =====================================================
 # ADMIN PAGE
 # =====================================================
+# =====================================================
+# ADMIN PAGE
+# =====================================================
 
 elif menu == "Admin":
     show_result_hero()
@@ -871,10 +875,15 @@ elif menu == "Admin":
 
     password = st.text_input("Admin password", type="password")
 
-    if password == ADMIN_PASSWORD:
+    if password == ADMIN_PASSWORD or password == FULL_ADMIN_PASSWORD:
         votes_df = load_votes()
 
-        st.success("Admin access granted.")
+        is_full_admin = password == FULL_ADMIN_PASSWORD
+
+        if is_full_admin:
+            st.success("Full admin access granted. Raw voting details are visible.")
+        else:
+            st.success("Limited admin access granted. Voter and nickname details are hidden.")
 
         if votes_df.empty:
             st.info("Henüz oy yok.")
@@ -891,41 +900,70 @@ elif menu == "Admin":
 
             st.divider()
 
-            st.subheader("Final Winner")
-            st.markdown(f"## 🏆 {winner}")
-            st.metric("Winner Score", winner_score)
+            st.subheader("Top 3 Result")
+            total_scores = calculate_total_scores(votes_df)
+            top_3 = total_scores.head(3).reset_index(drop=True)
+
+            if len(top_3) >= 1:
+                st.markdown(f"### 🏆 1st Place: {top_3.loc[0, 'selected_person']}")
+                st.metric("1st Place Score", int(top_3.loc[0, "score"]))
+
+            if len(top_3) >= 2:
+                st.markdown(f"### 🥈 2nd Place: {top_3.loc[1, 'selected_person']}")
+                st.metric("2nd Place Score", int(top_3.loc[1, "score"]))
+
+            if len(top_3) >= 3:
+                st.markdown(f"### 🥉 3rd Place: {top_3.loc[2, 'selected_person']}")
+                st.metric("3rd Place Score", int(top_3.loc[2, "score"]))
 
             st.divider()
 
-            st.subheader("Total Scores — Admin Only")
-            total_scores = calculate_total_scores(votes_df)
+            st.subheader("Total Scores")
             st.dataframe(total_scores, use_container_width=True)
             st.bar_chart(total_scores.set_index("selected_person"))
 
             st.divider()
 
-            st.subheader("Category Winners — Admin Only")
+            st.subheader("Category Winners")
             category_winners = calculate_category_winners(votes_df)
             st.dataframe(category_winners, use_container_width=True)
 
             st.divider()
 
-            st.subheader("Raw Votes — Admin Only")
-            st.warning("Bu tablo kim kime oy verdi bilgisini içerir. Normal sonuç ekranında gösterilmez.")
-            st.dataframe(votes_df, use_container_width=True)
+            st.subheader("Vote Details")
+
+            if is_full_admin:
+                st.warning("Full view: Bu tablo kim kime oy verdi bilgisini içerir.")
+                st.dataframe(votes_df, use_container_width=True)
+
+            else:
+                st.info("Limited view: Voter ve nickname bilgileri gizlenmiştir.")
+
+                anonymous_votes_df = votes_df.drop(
+                    columns=["voter", "nickname"],
+                    errors="ignore"
+                )
+
+                st.dataframe(anonymous_votes_df, use_container_width=True)
 
             st.divider()
 
             with st.expander("Danger Zone"):
                 st.warning("Bu işlem tüm oyları siler.")
-                confirm_reset = st.checkbox("I understand. Delete all votes.")
-                if st.button("Reset All Votes"):
-                    if confirm_reset:
-                        reset_votes()
-                        st.success("Tüm oylar silindi. Sayfayı yenileyebilirsin.")
-                    else:
-                        st.error("Silmek için onay kutusunu işaretlemelisin.")
+
+                if is_full_admin:
+                    confirm_reset = st.checkbox("I understand. Delete all votes.")
+                    if st.button("Reset All Votes"):
+                        if confirm_reset:
+                            reset_votes()
+                            st.success("Tüm oylar silindi. Sayfayı yenileyebilirsin.")
+                        else:
+                            st.error("Silmek için onay kutusunu işaretlemelisin.")
+                else:
+                    st.error("Reset işlemi sadece full admin şifresi ile yapılabilir.")
+
     elif password:
         st.error("Wrong password.")
     else:
         st.info("Admin sonuçlarını görmek için şifre gir.")
+
