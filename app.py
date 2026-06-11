@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
-import random
 from datetime import datetime
 
 # =====================================================
@@ -24,12 +23,12 @@ SCORE_PER_VOTE = 10
 
 EMPLOYEES = [
     "EDA",
-    "ERKAN",
     "ERGUN",
+    "ERKAN",
     "ERSİN",
     "GÜLAY",
-    "SERBAY",
     "NURCİHAN",
+    "SERBAY",
     "ZEYNEP"
 ]
 
@@ -563,19 +562,7 @@ def calculate_category_winners(votes_df):
 # HELPER FUNCTIONS
 # =====================================================
 
-def get_randomized_options(voter):
-    """
-    Her voter için seçenekleri session içinde bir kere random yapar.
-    Böylece Streamlit rerun olduğunda sıralama sürekli değişip kullanıcıyı bozmaz.
-    """
-    session_key = f"random_options_{voter}"
 
-    if session_key not in st.session_state:
-        available_options = [person for person in EMPLOYEES if person != voter]
-        random.shuffle(available_options)
-        st.session_state[session_key] = available_options
-
-    return st.session_state[session_key]
 
 
 # =====================================================
@@ -691,7 +678,7 @@ if menu == "Vote":
     else:
         st.info("Kendi adına oy veremezsin. Your own name will not appear in the options.")
 
-        randomized_options = get_randomized_options(voter)
+        available_options = [person for person in EMPLOYEES if person != voter]
 
         answers = {}
         comments = {}
@@ -711,7 +698,7 @@ if menu == "Vote":
 
                 selected_person = st.radio(
                     "Choose one person / Bir kişi seç",
-                    options=randomized_options,
+                    options=available_options,
                     key=f"question_{question['id']}",
                     horizontal=True,
                     index=None
