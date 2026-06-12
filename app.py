@@ -22,8 +22,21 @@ FULL_ADMIN_PASSWORD = "tokyo123"   # Full admin: shows everything
 RESULT_PASSWORD = "winner2026"     # Password for revealing final result
 SCORE_PER_VOTE = 10
 
-EMPLOYEES = [
+# Oy kullanabilecek kişiler
+VOTERS = [
     "EDA",
+    "ERGUN",
+    "ERKAN",
+    "ERSİN",
+    "GÜLAY",
+    "NURCİHAN",
+    "SERBAY",
+    "ZEYNEP"
+]
+
+# Oy verilebilecek kişiler
+# EDA burada yok, yani EDA oy kullanabilir ama EDA'ya oy verilemez.
+EMPLOYEES = [
     "ERGUN",
     "ERKAN",
     "ERSİN",
@@ -48,9 +61,9 @@ QUESTIONS = [
     },
     {
         "id": 3,
-        "category": "Planning & Follow-up",
-        "en": "Who shows the strongest discipline in planning, time tracking, attending meetings on time, and following up on tasks in an organized way?",
-        "tr": "Planlama, zaman takibi, toplantılara zamanında katılma ve işleri düzenli şekilde takip etme konusunda en güçlü disiplini gösteren kişi kimdir?"
+        "category": "Calm Problem Solving",
+        "en": "Who stays calm when problems arise and focuses on finding solutions in the most effective way?",
+        "tr": "Sorunlar karşısında sakin kalıp en etkili şekilde çözüm üretmeye odaklanan kişi kimdir?"
     },
     {
         "id": 4,
@@ -72,9 +85,9 @@ QUESTIONS = [
     },
     {
         "id": 7,
-        "category": "Feedback & Transparency",
-        "en": "Who gives feedback in the most transparent, honest, and constructive way, helping others improve while keeping communication clear and respectful?",
-        "tr": "Geri bildirimi en şeffaf, dürüst ve yapıcı şekilde vererek, iletişimi açık ve saygılı tutan ve başkalarının gelişimine katkı sağlayan kişi kimdir?"
+        "category": "Stress Management",
+        "en": "Who is the person you see as a role model for managing stress calmly and professionally?",
+        "tr": "Stres yönetimini sakin ve profesyonel şekilde yaptığı için örnek aldığınız kişi kimdir?"
     },
     {
         "id": 8,
@@ -109,8 +122,8 @@ QUESTIONS = [
     {
         "id": 13,
         "category": "Most Agile Teammate",
-        "en": "Who is the one who adapts the quickest when priorities change or new situations come up?",
-        "tr": "Değişen önceliklere, hızlı aksiyon alınması gereken durumlara ve yeni koşullara en hızlı ve etkili şekilde uyum sağlayan kişi kimdi?"
+        "en": "Who adapts the quickest when priorities change or new situations come up?",
+        "tr": "Öncelikler değiştiğinde veya yeni durumlar ortaya çıktığında en hızlı uyum sağlayan kişi kimdi?"
     },
     {
         "id": 14,
@@ -536,7 +549,8 @@ def calculate_total_scores(votes_df):
         votes_df
         .groupby("selected_person", as_index=False)["score"]
         .sum()
-        .sort_values("score", ascending=False)
+        .sort_values(["score", "selected_person"], ascending=[False, True])
+        .reset_index(drop=True)
     )
 
 
@@ -560,7 +574,7 @@ def calculate_category_winners(votes_df):
         votes_df
         .groupby(["question_category", "selected_person"], as_index=False)["score"]
         .sum()
-        .sort_values(["question_category", "score"], ascending=[True, False])
+        .sort_values(["question_category", "score", "selected_person"], ascending=[True, False, True])
     )
 
     return (
@@ -571,11 +585,29 @@ def calculate_category_winners(votes_df):
     )
 
 
-# =====================================================
-# HELPER FUNCTIONS
-# =====================================================
+def calculate_top_3_people_only(votes_df):
+    """
+    Sadece ilk 3 kişiyi gösterir.
+    4. kişi 3. kişiyle aynı puanda olsa bile dahil edilmez.
+    İlk 3 kişinin kendi içinde eşit puanı varsa aynı sırada gösterilir.
+    """
+    if votes_df.empty:
+        return pd.DataFrame(columns=["selected_person", "score", "rank"])
 
+    total_scores = calculate_total_scores(votes_df).copy()
 
+    top_3 = total_scores.head(3).copy().reset_index(drop=True)
+
+    unique_scores = top_3["score"].drop_duplicates().tolist()
+
+    score_to_rank = {
+        score: rank + 1
+        for rank, score in enumerate(unique_scores)
+    }
+
+    top_3["rank"] = top_3["score"].map(score_to_rank)
+
+    return top_3
 
 
 # =====================================================
@@ -643,8 +675,8 @@ if menu == "Vote":
         <div class="rule-wrapper">
             <div class="rule-card">
                 <div class="rule-icon">🔒</div>
-                <div class="rule-title">Private Voting</div>
-                <div class="rule-text">Oylar gizli tutulur.</div>
+                <div class="rule-title">Confidential Voting</div>
+                <div class="rule-text">Oy detayları sonuç ekranında gösterilmez.</div>
             </div>
             <div class="rule-card">
                 <div class="rule-icon">🚫</div>
@@ -676,7 +708,7 @@ if menu == "Vote":
 
     voter = st.selectbox(
         "1. Select your real name / Gerçek ismini seç",
-        options=["Select / Seç"] + EMPLOYEES
+        options=["Select / Seç"] + VOTERS
     )
 
     nickname = st.text_input(
@@ -689,7 +721,7 @@ if menu == "Vote":
     elif has_voted(voter):
         st.error("Bu isim daha önce oy kullandı. Each real name can vote only once.")
     else:
-        st.info("Kendi adına oy veremezsin. Your own name will not appear in the options.")
+        st.info("Kendi adına oy veremezsin. EDA oy kullanabilir ama oy verilecek kişiler listesinde yer almaz.")
 
         available_options = [person for person in EMPLOYEES if person != voter]
 
@@ -790,7 +822,7 @@ elif menu == "Final Result":
         if total_scores.empty:
             st.info("Henüz oy yok. No votes yet.")
         else:
-            top_3 = total_scores.head(3).reset_index(drop=True)
+            top_3_people = calculate_top_3_people_only(votes_df)
 
             st.balloons()
             st.snow()
@@ -807,54 +839,64 @@ elif menu == "Final Result":
                         Her oy; takdir, saygı ve ekip ruhunu temsil ediyor.<br>
                         Şimdi Top 3'ü açıklama zamanı!
                     </p>
+                    <p>
+                        <b>Each vote gives 10 points.</b><br>
+                        <b>Her oy 10 puandır.</b>
+                    </p>
                 </div>
                 ''',
                 unsafe_allow_html=True
             )
 
-            if len(top_3) >= 3:
-                third_name = top_3.loc[2, "selected_person"]
-                third_score = int(top_3.loc[2, "score"])
+            rank_icons = {
+                1: "🏆",
+                2: "🥈",
+                3: "🥉"
+            }
 
-                st.markdown(
-                    f'''
-                    <div class="top-three-box">
-                        <div style="font-size:28px; font-weight:950;">🥉 3rd Place / 3. Sıra</div>
-                        <div style="font-size:46px; font-weight:950; margin:14px 0;">{third_name}</div>
-                        <div style="font-size:24px; font-weight:850;">Total Score / Toplam Puan: {third_score}</div>
-                    </div>
-                    ''',
-                    unsafe_allow_html=True
-                )
+            rank_labels = {
+                1: "1st Place / 1. Sıra",
+                2: "2nd Place / 2. Sıra",
+                3: "3rd Place / 3. Sıra"
+            }
 
-            if len(top_3) >= 2:
-                second_name = top_3.loc[1, "selected_person"]
-                second_score = int(top_3.loc[1, "score"])
+            for rank in [3, 2, 1]:
+                rank_df = top_3_people[top_3_people["rank"] == rank]
 
-                st.markdown(
-                    f'''
-                    <div class="top-three-box">
-                        <div style="font-size:30px; font-weight:950;">🥈 2nd Place / 2. Sıra</div>
-                        <div style="font-size:50px; font-weight:950; margin:14px 0;">{second_name}</div>
-                        <div style="font-size:25px; font-weight:850;">Total Score / Toplam Puan: {second_score}</div>
-                    </div>
-                    ''',
-                    unsafe_allow_html=True
-                )
+                if not rank_df.empty:
+                    names = ", ".join(rank_df["selected_person"].tolist())
+                    score = int(rank_df["score"].iloc[0])
+                    person_count = len(rank_df)
 
-            first_name = top_3.loc[0, "selected_person"]
-            first_score = int(top_3.loc[0, "score"])
+                    if person_count > 1:
+                        tie_text = f"{person_count} people share this place / Bu sırayı {person_count} kişi paylaşıyor"
+                    else:
+                        tie_text = ""
 
-            st.markdown(
-                f'''
-                <div class="winner-box">
-                    <div class="winner-label">🏆 Employee of the Year / Yılın Elemanı 🏆</div>
-                    <div class="winner-name">{first_name}</div>
-                    <div class="winner-score">Total Score / Toplam Puan: {first_score}</div>
-                </div>
-                ''',
-                unsafe_allow_html=True
-            )
+                    if rank == 1:
+                        st.markdown(
+                            f'''
+                            <div class="winner-box">
+                                <div class="winner-label">{rank_icons[rank]} Employee of the Year / Yılın Elemanı {rank_icons[rank]}</div>
+                                <div class="winner-name">{names}</div>
+                                <div class="winner-score">Total Score / Toplam Puan: {score}</div>
+                                <div class="winner-score" style="font-size:20px; margin-top:10px;">{tie_text}</div>
+                            </div>
+                            ''',
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.markdown(
+                            f'''
+                            <div class="top-three-box">
+                                <div style="font-size:30px; font-weight:950;">{rank_icons[rank]} {rank_labels[rank]}</div>
+                                <div style="font-size:48px; font-weight:950; margin:14px 0;">{names}</div>
+                                <div style="font-size:25px; font-weight:850;">Total Score / Toplam Puan: {score}</div>
+                                <div style="font-size:18px; font-weight:750; margin-top:10px;">{tie_text}</div>
+                            </div>
+                            ''',
+                            unsafe_allow_html=True
+                        )
 
             st.markdown(
                 '''
@@ -873,9 +915,6 @@ elif menu == "Final Result":
                 st.rerun()
 
 
-# =====================================================
-# ADMIN PAGE
-# =====================================================
 # =====================================================
 # ADMIN PAGE
 # =====================================================
@@ -903,7 +942,6 @@ elif menu == "Admin":
             total_voters = votes_df["voter"].nunique()
             total_votes = len(votes_df)
             total_points = votes_df["score"].sum()
-            winner, winner_score = calculate_winner(votes_df)
 
             col1, col2, col3 = st.columns(3)
             col1.metric("Total Voters", total_voters)
@@ -913,24 +951,34 @@ elif menu == "Admin":
             st.divider()
 
             st.subheader("Top 3 Result")
-            total_scores = calculate_total_scores(votes_df)
-            top_3 = total_scores.head(3).reset_index(drop=True)
+            top_3_people = calculate_top_3_people_only(votes_df)
 
-            if len(top_3) >= 1:
-                st.markdown(f"### 🏆 1st Place: {top_3.loc[0, 'selected_person']}")
-                st.metric("1st Place Score", int(top_3.loc[0, "score"]))
+            rank_icons = {
+                1: "🏆",
+                2: "🥈",
+                3: "🥉"
+            }
 
-            if len(top_3) >= 2:
-                st.markdown(f"### 🥈 2nd Place: {top_3.loc[1, 'selected_person']}")
-                st.metric("2nd Place Score", int(top_3.loc[1, "score"]))
+            rank_labels = {
+                1: "1st Place",
+                2: "2nd Place",
+                3: "3rd Place"
+            }
 
-            if len(top_3) >= 3:
-                st.markdown(f"### 🥉 3rd Place: {top_3.loc[2, 'selected_person']}")
-                st.metric("3rd Place Score", int(top_3.loc[2, "score"]))
+            for rank in [1, 2, 3]:
+                rank_df = top_3_people[top_3_people["rank"] == rank]
+
+                if not rank_df.empty:
+                    names = ", ".join(rank_df["selected_person"].tolist())
+                    score = int(rank_df["score"].iloc[0])
+
+                    st.markdown(f"### {rank_icons[rank]} {rank_labels[rank]}: {names}")
+                    st.metric("Score", score)
 
             st.divider()
 
             st.subheader("Total Scores")
+            total_scores = calculate_total_scores(votes_df)
             st.dataframe(total_scores, use_container_width=True)
             st.bar_chart(total_scores.set_index("selected_person"))
 
@@ -948,6 +996,14 @@ elif menu == "Admin":
                 st.warning("Full view: Bu tablo kim kime oy verdi bilgisini içerir.")
                 st.dataframe(votes_df, use_container_width=True)
 
+                csv = votes_df.to_csv(index=False).encode("utf-8-sig")
+                st.download_button(
+                    label="Download Full Votes as CSV",
+                    data=csv,
+                    file_name="employee_of_the_year_votes_full.csv",
+                    mime="text/csv"
+                )
+
             else:
                 st.info("Limited view: Voter ve nickname bilgileri gizlenmiştir.")
 
@@ -957,6 +1013,14 @@ elif menu == "Admin":
                 )
 
                 st.dataframe(anonymous_votes_df, use_container_width=True)
+
+                csv = anonymous_votes_df.to_csv(index=False).encode("utf-8-sig")
+                st.download_button(
+                    label="Download Anonymous Votes as CSV",
+                    data=csv,
+                    file_name="employee_of_the_year_votes_anonymous.csv",
+                    mime="text/csv"
+                )
 
             st.divider()
 
@@ -978,4 +1042,3 @@ elif menu == "Admin":
         st.error("Wrong password.")
     else:
         st.info("Admin sonuçlarını görmek için şifre gir.")
-
